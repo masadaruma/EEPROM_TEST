@@ -11,9 +11,18 @@ void setup(){
     KEYPAD.Init();
     lcd.begin(16,2);
     lcd.clear();lcd.home();lcd.print("hello");
-    password_input();
+    password_EEPROM_read();
+    /*EEPROM.write(0,1);
+    EEPROM.write(1,2);
+    EEPROM.write(2,3);
+    EEPROM.write(3,4);
+    EEPROM.write(4,5);
+    EEPROM.write(5,6);
+    EEPROM.write(6,7);
+    EEPROM.write(7,8);*/
 }
 
 void loop(){
-    
+    password_input();
+    password_setting();  
 }
