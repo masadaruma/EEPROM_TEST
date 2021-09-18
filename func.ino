@@ -50,6 +50,7 @@ int button_input()
 bool password_input()
 {
 pass_start:
+	password_EEPROM_read();
 	unsigned char input_pass[8], pass_check = 0;
 	lcd.clear();
 	lcd.setCursor(0, 0);
@@ -222,6 +223,7 @@ pass_start:
 
 void password_EEPROM_write()
 {
+	Serial.println("EEPROM writing");
 	for (int i = 0; i < 8; i++)
 	{
 		EEPROM.write(i, password[i]);
@@ -230,6 +232,7 @@ void password_EEPROM_write()
 
 void password_EEPROM_read()
 {
+	Serial.println("EEPROM reading");
 	for (int i = 0; i < 8; i++)
 	{
 		password[i] = EEPROM.read(i);
@@ -672,7 +675,7 @@ void degree_input()
 
 void lock_unlock()
 { //ロック用
-    byte input;
+	byte input;
 	while (1)
 	{
 		if (EEPROM.read(10) == false)
@@ -710,9 +713,11 @@ void lock_unlock()
 					break;
 				}
 			}
-			else if (input == 1)break;
+			else if (input == 1)
+				break;
 		}
-		if(input==1)break;
+		if (input == 1)
+			break;
 	}
 }
 
@@ -747,8 +752,8 @@ void reset()
 			break;
 		case 0: //select
 			if (reset_flag == true)
-			{
-				for (int i = 0; i < 10; i++)
+			{	Serial.println("resetting");
+				for (int i = 0; i < 15; i++)
 				{
 					EEPROM.write(i, 0);
 				}
@@ -847,7 +852,159 @@ void dsp(byte disp, byte pos)
 	}
 }
 
-void menu_manage()
+void menu1()
 {
-	byte menu_limit[8] = {1, 2, 4};
+	byte input, pos = 0;
+	while (1) //入力ループ
+	{
+		input = button_input();
+		if (input < 5)
+		{
+			switch (input)
+			{
+			case 2: //down
+				lcd.clear();
+				lcd.setCursor(0, 0);
+				lcd.print("> Lock");
+				lcd.setCursor(0, 1);
+				lcd.print("  Setting");
+				pos = 0;
+				break;
+			case 3: //down
+				lcd.clear();
+				lcd.setCursor(0, 0);
+				lcd.print("  Lock");
+				lcd.setCursor(0, 1);
+				lcd.print("> Setting");
+				pos = 1;
+				break;
+			case 4:
+				switch (pos)
+				{
+				case 0:
+					lock_unlock();
+					lcd.clear();
+					lcd.setCursor(0, 0);
+					lcd.print("> Lock");
+					lcd.setCursor(0, 1);
+					lcd.print("  Setting");
+					pos = 0;
+					break;
+				case 1:
+					setting();
+					lcd.clear();
+					lcd.setCursor(0, 0);
+					lcd.print("  Lock");
+					lcd.setCursor(0, 1);
+					lcd.print("> Setting");
+					pos = 1;
+					break;
+				}
+			default:
+				break;
+			}
+		}
+	}
+}
+
+void setting()
+{
+START:;
+	lcd.clear();
+	lcd.setCursor(0, 0);
+	lcd.print("> RESET");
+	lcd.setCursor(0, 1);
+	lcd.print("  Password");
+	byte input, pos = 0;
+	while (1)
+	{
+		input = button_input();
+		if (input == 2 || 3)
+		{ //2か3(upかdownなら)
+			switch (input)
+			{
+			case 1: //left
+				goto SETTING_EXIT;
+				//menu1に戻る
+				break;
+			case 2: //up
+				if (pos != 0)
+				{
+					pos--;
+				}
+				break;
+
+			case 3: //down
+				if (pos != 4)
+				{
+					pos++;
+				}
+				break;
+			case 4: //right
+				//選択している画面に移動
+				switch (pos)
+				{
+				case 0:
+					reset();
+					goto START;
+					break;
+
+				case 1:
+					password_setting();
+					goto START;
+					break;
+
+				case 2:
+					password_setting();
+					goto START;
+					break;
+
+				case 3:
+					degree_input();
+					goto START;
+					break;
+				}
+				break;
+			}
+		}
+		if (input == 2 || input == 3)
+		{
+			switch (pos)
+			{
+			case 0:
+				lcd.clear();
+				lcd.setCursor(0, 0);
+				lcd.print("> RESET");
+				lcd.setCursor(0, 1);
+				lcd.print("  Password");
+				pos = 0;
+				break;
+			case 1:
+				lcd.clear();
+				lcd.setCursor(0, 0);
+				lcd.print("  RESET");
+				lcd.setCursor(0, 1);
+				lcd.print("> Password");
+				pos = 1;
+				break;
+			case 2:
+				lcd.clear();
+				lcd.setCursor(0, 0);
+				lcd.print("> Password");
+				lcd.setCursor(0, 1);
+				lcd.print("  Degree");
+				pos = 2;
+				break;
+			case 3:
+				lcd.clear();
+				lcd.setCursor(0, 0);
+				lcd.print("  Password");
+				lcd.setCursor(0, 1);
+				lcd.print("> Degree");
+				pos = 3;
+				break;
+			}
+		}
+	}
+SETTING_EXIT:;
 }
