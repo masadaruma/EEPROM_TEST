@@ -48,10 +48,11 @@ int button_input()
 }
 
 bool password_input()
-{
-pass_start:
+{	
 	password_EEPROM_read();
+	byte miss_time = 0;//パスワード入力ミス回数
 	unsigned char input_pass[8], pass_check = 0;
+	pass_start:;
 	lcd.clear();
 	lcd.setCursor(0, 0);
 	lcd.print("Password?");
@@ -216,6 +217,18 @@ pass_start:
 		lcd.clear();
 		lcd.setCursor(0, 0);
 		lcd.print("Wrong pass.");
+		miss_time++;
+		if(miss_time>=5){
+			lcd.clear();lcd.setCursor(0,0);lcd.print("####Warning####");
+			while(1){
+				lcd.display();
+				tone(A1,440);
+				delay(300);
+				lcd.noDisplay();
+				tone(A1,400);
+				delay(300);
+			}
+		}
 		delay(1000);
 		goto pass_start;
 	}
@@ -676,6 +689,22 @@ void degree_input()
 void lock_unlock()
 { //ロック用
 	byte input;
+	if (EEPROM.read(10) == false)
+		{ //開いているなら
+			lcd.clear();
+			lcd.setCursor(0, 0);
+			lcd.print("   &UnLocked&");
+			lcd.setCursor(0, 1);
+			lcd.print("   Push button");
+		}
+		else if (EEPROM.read(10) == true)
+		{
+			lcd.clear();
+			lcd.setCursor(0, 0);
+			lcd.print("    #Locked#");
+			lcd.setCursor(0, 1);
+			lcd.print("   Push button");
+		}
 	while (1)
 	{
 		if (EEPROM.read(10) == false)
@@ -752,7 +781,8 @@ void reset()
 			break;
 		case 0: //select
 			if (reset_flag == true)
-			{	Serial.println("resetting");
+			{
+				Serial.println("resetting");
 				for (int i = 0; i < 15; i++)
 				{
 					EEPROM.write(i, 0);
@@ -852,7 +882,7 @@ void dsp(byte disp, byte pos)
 	}
 }
 
-void menu1()
+void main_menu()
 {
 	byte input, pos = 0;
 	while (1) //入力ループ
@@ -868,6 +898,7 @@ void menu1()
 				lcd.print("> Lock");
 				lcd.setCursor(0, 1);
 				lcd.print("  Setting");
+				Serial.println("2");
 				pos = 0;
 				break;
 			case 3: //down
@@ -876,6 +907,7 @@ void menu1()
 				lcd.print("  Lock");
 				lcd.setCursor(0, 1);
 				lcd.print("> Setting");
+				Serial.println("3");
 				pos = 1;
 				break;
 			case 4:
@@ -888,6 +920,7 @@ void menu1()
 					lcd.print("> Lock");
 					lcd.setCursor(0, 1);
 					lcd.print("  Setting");
+					Serial.println("4-0");
 					pos = 0;
 					break;
 				case 1:
@@ -897,10 +930,12 @@ void menu1()
 					lcd.print("  Lock");
 					lcd.setCursor(0, 1);
 					lcd.print("> Setting");
+					Serial.println("4-1");
 					pos = 1;
 					break;
 				}
 			default:
+			Serial.println("default");
 				break;
 			}
 		}

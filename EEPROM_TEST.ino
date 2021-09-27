@@ -18,19 +18,19 @@ void setup()
 	lcd.home();
 	lcd.print("hello");
 	password_EEPROM_read();
-	/*EEPROM.write(0,1);//初回実行時はEEPROMの値が不定なため初期化する
-    EEPROM.write(1,2);
-    EEPROM.write(2,3);
-    EEPROM.write(3,4);
-    EEPROM.write(4,5);
-    EEPROM.write(5,6);
-    EEPROM.write(6,7);
-    EEPROM.write(7,8);*/
+	if(EEPROM.read(10)){//ロックされてるなら
+		servo.write(EEPROM.read(8));
+	}else if(EEPROM.read(10)==false){//アンロックされてるなら
+		servo.write(EEPROM.read(9));
+	}
+	/*初期化用
+	for(int i=0;i<15;i++){
+		EEPROM.write(i,0);
+	}
+	*/
 }
 
 void loop()
 {
-	menu1();
-	//password_input();
-	//password_setting();
+	main_menu();
 }
